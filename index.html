@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- VueJS2 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Sweet Alert 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts ( Kanit ) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Kanit', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="m-8 grid grid-cols-[30%_65%] justify-center gap-4">
+            <div class="border-2 border-green-800 p-2 rounded-lg w-full h-fit flex flex-col gap-2">
+                <h1 class="text-2xl">Insert Student Info</h1>
+                <form class="grid grid-cols-1 gap-2">
+                    <input v-model="student.fname" type="text" placeholder="Firstname" class="border border-stone-800 rounded py-1 px-2">
+                    <input v-model="student.lname" type="text" placeholder="Lastname" class="border border-stone-800 rounded py-1 px-2">
+                    <input v-model="student.phone" type="text" placeholder="Phone" class="border border-stone-800 rounded py-1 px-2">
+                    <textarea v-model="student.address" rows="4" class="w-full resize-none border border-stone-800 rounded py-1 px-2" placeholder="Address"></textarea>
+                    <button @click="addStudent" type="submit" class="w-fit justify-self-end bg-green-800 py-1 px-2 rounded text-white transition-colors hover:bg-green-700">Insert Student</button>
+                </form>
+            </div>
+            <div class="bg-green-800 p-2 rounded-lg w-full h-fit grid grid-cols-1">
+                <div class="w-full flex justify-between mb-2">
+                    <h1 class="text-2xl text-white">Student Information</h1>
+                    <button class="bg-red-400 transition-colors hover:bg-red-500 py-1 px-2 rounded text-white" @click="deleteAllStudent">Delete All Student</button>
+                </div>
+                <div class="bg-yellow-400 rounded-t py-1 px-2 text-stone-800">
+                    <div class="grid grid-cols-[15%_15%_15%_30%_25%] place-items-center font-medium break-words">
+                        <h2 class="w-full">Firstname</h2>
+                        <h2 class="w-full">Lastname</h2>
+                        <h2 class="w-full">Phone</h2>
+                        <h2 class="w-full">Address</h2>
+                        <h2 class="w-full">Tools</h2>
+                    </div>
+                </div>
+                <div class="bg-white rounded-b py-1 px-2 text-stone-800 devide-y-2">
+                    <div v-if="student.length">
+                        <div v-for="(s, index) in student" :key="index">
+                            <div class="grid grid-cols-[15%_15%_15%_30%_25%] place-items-start py-1 break-words">
+                                <p class="w-full">{{ s.fname }}</p>
+                                <p class="w-full">{{ s.lname }}</p>
+                                <p class="w-full">{{ s.phone }}</p>
+                                <p class="w-full">{{ s.address }}</p>
+                                <div class="ml-4">
+                                    <button class="bg-blue-400 py-1 px-2 rounded transition-colors hover:bg-blue-500 text-white text-sm" @click="popupEditStudent(index)">Edit</button>
+                                    <button class="bg-red-400 py-1 px-2 rounded transition-colors hover:bg-red-500 text-white text-sm" @click="popupDeleteStudent(index)">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else>
+                        <div class="flex justify-center">
+                            <p>-------------- blank --------------</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+    <script>
+        const host = 'http://localhost:8000';
+
+        new Vue({
+            el: '#app',
+            data: {
+                student: []
+            },
+            mounted() {
+                axios.get(`${host}/student`)
+                    .then(res => {
+                        this.student = res.data.data
+                    })
+            },
+            methods: {
+                addStudent() {
+                    axios.post(`${host}/student`,{
+                        fname: this.student.fname,
+                        lname: this.student.lname,
+                        phone: this.student.phone,
+                        address: this.student.address
+                    })
+                    .then(res => {
+                        this.student.fname ='';
+                        this.student.lname ='';
+                        this.student.phone ='';
+                        this.student.address ='';
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+                },
+
+                popupEditStudent(index) {
+                    Swal.fire({
+                        title: 'Edit Student Info',
+                        html: `
+                        <form class="grid grid-cols-1 gap-2">
+                            <input id="fname" type="text" placeholder="Firstname" class="border border-stone-800 rounded py-1 px-2" value="${this.student[index].fname}">
+                            <input id="lname" type="text" placeholder="Lastname" class="border border-stone-800 rounded py-1 px-2" value="${this.student[index].lname}">
+                            <input id="phone" type="text" placeholder="Phone" class="border border-stone-800 rounded py-1 px-2" value="${this.student[index].phone}">
+                            <textarea id="address" rows="4" class="w-full resize-none border border-stone-800 rounded py-1 px-2" placeholder="Address">${this.student[index].address}</textarea>
+                        </form>
+                        `,
+                        confirmButtonText: 'Update',
+                        showCancelButton: true,
+                        preConfirm: () => {
+                            const fname = document.getElementById('fname').value;
+                            const lname = document.getElementById('lname').value;
+                            const phone = document.getElementById('phone').value;
+                            const address = document.getElementById('address').value;
+                            const id = this.student[index].id;
+
+                            this.updateStudent(fname, lname, phone, address, id);
+                            window.location.reload();
+                        }
+                    })
+                },
+
+                updateStudent(fname, lname, phone, address, id) {
+                    axios.put(`${host}/student/${id}`, {fname, lname, phone, address})
+                        .then(res => {
+                            this.student.fname = fname;
+                            this.student.lname = lname;
+                            this.student.phone = phone;
+                            this.student.address = address;
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        })
+                },
+
+                popupDeleteStudent(index) {
+                    Swal.fire({
+                        title: 'Delete This Row ?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sure',
+                        preConfirm: () => {
+                            const id = this.student[index].id;
+
+                            this.deleteStudent(id);
+                            window.location.reload();
+                        }
+                    })
+                },
+
+                deleteStudent(id) {
+                    axios.delete(`${host}/student/${id}`);
+                },
+
+                deleteAllStudent() {
+                    Swal.fire({
+                        title: 'Delete All Student ?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sure',
+                        preConfirm: () => {
+                            axios.delete(`${host}/student`);
+                            window.location.reload();
+                        }
+                    })
+                }
+            }
+        })
+    </script>
+</body>
+</html>
